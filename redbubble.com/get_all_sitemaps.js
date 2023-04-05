@@ -5,7 +5,7 @@ const xml2js = require('xml2js');
 
 
 function convertToSlug(str) {
-    return str.replace('https://www.redbubble.com/sitemap/', 'redbubble.com/');
+    return str.replace('https://www.redbubble.com/sitemap/', 'redbubble.com/sitemap/');
 }
 
 const downloadAndReadFile = async (url, filePath) => {
