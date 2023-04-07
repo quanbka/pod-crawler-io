@@ -65,17 +65,29 @@ const Product = sequelize.define('product', {
     ratingCount: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
+    site: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: 'crawl_site' // Khai báo unique constraint cho crawlId và site
+    },
+    url: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    crawlId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: 'crawl_site' // Khai báo unique constraint cho crawlId và site
+    },
 });
-
-
 
 
 
 class HtmlReader {
 
     constructor() {
-        // sequelize.sync({ force: true }); // create table if not exists
+
     }
 
     async getTitle() {
@@ -95,10 +107,10 @@ class HtmlReader {
     }
 
     async upsertProduct(product) {
-        const options = {
-            where: { crawlId: product.crawlId, site: product.site },
-        };
-        Product.upsert(product, options)
+        // const options = {
+        //     where: { crawlId: product.crawlId, site: product.site },
+        // };
+        Product.upsert(product)
     }
 
     async readAndParseHTML() {
@@ -107,21 +119,13 @@ class HtmlReader {
 
         const $ = cheerio.load(html);
         const scriptTags = $('script[type="application/ld+json"]');
-        let ldJson = _.map(scriptTags, (script) => JSON.parse($(script).html()));
-        console.log(ldJson);
-        if (!ldJson) return;
-
-        ldJson = ldJson[0];
-
-
-
+        const ldJson = JSON.parse($('script[type="application/ld+json"]').first().html());
         const images = $('img.GalleryImage__img--2Epz2').toArray().map(img => $(img).attr('src'));
         const colors = $('.DesktopColorPicker__swatch--ODK-s').toArray().map(img => this.getColor($(img).attr('title')));
         const printLocation = $('input[name="printLocation"][checked]').next().text();
         const color = this.getColor($('.ColorSwatch__tick--2FPuM').parent().parent().attr('title'));
         const style = $('.styles__listContent--1pL_K h5').text();
         const styleDescription = $('.styles__listContent--1pL_K h6').text();
-
         return {
             'name': ldJson.name,
             'price': ldJson.offers.price,
@@ -141,10 +145,13 @@ class HtmlReader {
             url: ldJson.url,
             crawlId: this.getCrawlId(ldJson.url),
         }
-
     }
 }
 
 // Sử dụng
-const reader = new HtmlReader();
-reader.readAndParseHTML().then(product => reader.upsertProduct(product));
+sequelize.sync({ force: false }).then(() => {
+    const reader = new HtmlReader();
+    reader.readAndParseHTML().then(product => 
+        reader.upsertProduct(product));
+    }
+)
