@@ -86,10 +86,6 @@ const Product = sequelize.define('product', {
 
 class HtmlReader {
 
-    constructor() {
-
-    }
-
     async getTitle() {
         const html = await request.get(this.url);
         const $ = cheerio.load(html);
@@ -97,7 +93,6 @@ class HtmlReader {
     }
 
     getColor(str) {
-
         return str.replace(" Fitted T-Shirt", "");
     }
 
@@ -107,9 +102,6 @@ class HtmlReader {
     }
 
     async upsertProduct(product) {
-        // const options = {
-        //     where: { crawlId: product.crawlId, site: product.site },
-        // };
         Product.upsert(product)
     }
 
