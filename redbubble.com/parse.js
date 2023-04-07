@@ -86,6 +86,7 @@ const Product = sequelize.define('product', {
 
 class HtmlReader {
 
+
     async getTitle() {
         const html = await request.get(this.url);
         const $ = cheerio.load(html);
@@ -105,10 +106,7 @@ class HtmlReader {
         Product.upsert(product)
     }
 
-    async readAndParseHTML() {
-        const html = fs.readFileSync('redbubble.com/product.html', 'utf-8');
-        if (!html) return;
-
+    async readAndParseHTML(html) {
         const $ = cheerio.load(html);
         const scriptTags = $('script[type="application/ld+json"]');
         const ldJson = JSON.parse($('script[type="application/ld+json"]').first().html());
@@ -143,7 +141,8 @@ class HtmlReader {
 // Sử dụng
 sequelize.sync({ force: false }).then(() => {
     const reader = new HtmlReader();
-    reader.readAndParseHTML().then(product => 
+    const html = fs.readFileSync('redbubble.com/product.html', 'utf-8');
+    reader.readAndParseHTML(html).then(product => 
         reader.upsertProduct(product));
     }
 )
