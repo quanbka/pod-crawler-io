@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('pod-crawler-io', 'root', '123@123', {
     host: '10.0.0.172',
     dialect: 'mysql',
-    // logging: false // Tắt log của Sequelize
+    logging: false // Tắt log của Sequelize
 
 });
 
