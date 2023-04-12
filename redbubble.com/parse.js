@@ -30,7 +30,11 @@ const Product = sequelize.define('product', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    images: {
+    gallery: {
+        type: DataTypes.JSON,
+        allowNull: false
+    },
+    tags: {
         type: DataTypes.JSON,
         allowNull: false
     },
@@ -80,12 +84,24 @@ const Product = sequelize.define('product', {
         allowNull: false,
         unique: 'crawl_site' // Khai báo unique constraint cho crawlId và site
     },
+    crawl_code : {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
 });
 
 
 
 class HtmlReader {
 
+    async crawl(url) {
+        // console.log(url);
+        const html = await request.get(url);
+        // console.log(html);
+        let product = await this.readAndParseHTML(html);
+        console.log(product);
+        await this.upsertProduct(product);
+    }
 
     async getTitle() {
         const html = await request.get(this.url);
@@ -93,8 +109,8 @@ class HtmlReader {
         return $('title').text().trim();
     }
 
-    getColor(str) {
-        return str.replace(" Fitted T-Shirt", "");
+    getColor(str, style = '') {
+        return str.replace(style, '');
     }
 
     getCrawlId(str) {
@@ -102,27 +118,42 @@ class HtmlReader {
         return str.match(pattern)[1];
     }
 
+    getCrawlCode(str) {
+        return str.replace("https://www.redbubble.com/i/", "");
+    }
+
     async upsertProduct(product) {
-        Product.upsert(product)
+        try {
+            await Product.upsert(product)
+        } catch (error) {
+            console.log(product);
+            console.log(error);
+        }
+
     }
 
     async readAndParseHTML(html) {
         const $ = cheerio.load(html);
         const scriptTags = $('script[type="application/ld+json"]');
         const ldJson = JSON.parse($('script[type="application/ld+json"]').first().html());
-        const images = $('img.GalleryImage__img--2Epz2').toArray().map(img => $(img).attr('src'));
-        const colors = $('.DesktopColorPicker__swatch--ODK-s').toArray().map(img => this.getColor($(img).attr('title')));
-        const printLocation = $('input[name="printLocation"][checked]').next().text();
-        const color = this.getColor($('.ColorSwatch__tick--2FPuM').parent().parent().attr('title'));
         const style = $('.styles__listContent--1pL_K h5').text();
+        const gallery = $('img.GalleryImage__img--2Epz2').toArray().map(img => $(img).attr('src'));
+        const colors = $('.DesktopColorPicker__swatch--ODK-s').toArray().map(img => 
+            this.getColor($(img).attr('title'), style)
+        );
+        const printLocation = $('input[name="printLocation"][checked]').next().text();
+        const color = this.getColor($('.ColorSwatch__tick--2FPuM').parent().parent().attr('title'), style);
+       
         const styleDescription = $('.styles__listContent--1pL_K h6').text();
+        const tags = $('#product-tags span').toArray().map(span => $(span).text());
         return {
             'name': ldJson.name,
             'price': ldJson.offers.price,
             'currency': ldJson.offers.priceCurrency,
             'image': ldJson.image,
             'description': ldJson.description,
-            images,
+            gallery,
+            tags,
             color,
             colors,
             printLocation,
@@ -134,15 +165,18 @@ class HtmlReader {
             site: 'redbubble.com',
             url: ldJson.url,
             crawlId: this.getCrawlId(ldJson.url),
+            crawl_code: this.getCrawlCode(ldJson.url),
         }
     }
 }
 
-// Sử dụng
-sequelize.sync({ force: false }).then(() => {
-    const reader = new HtmlReader();
-    const html = fs.readFileSync('redbubble.com/product.html', 'utf-8');
-    reader.readAndParseHTML(html).then(product => 
-        reader.upsertProduct(product));
-    }
-)
+// // sequelize.sync({ force: true }).then(() => {
+// const reader = new HtmlReader();
+
+// (async function() {
+//     const url = 'https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110';
+//     await reader.crawl(url);
+//     console.log("Done");
+// })();
+
+// // });
