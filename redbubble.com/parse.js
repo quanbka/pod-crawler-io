@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('pod-crawler-io', 'root', '123@123', {
     host: '10.0.0.172',
     dialect: 'mysql',
-    logging: false // Tắt log của Sequelize
+    // logging: false // Tắt log của Sequelize
 
 });
 
@@ -210,10 +210,10 @@ class Parse {
 // // sequelize.sync({ force: true }).then(() => {
 const reader = new Parse();
 
-(async function() {
-    await reader.crawl('https://www.redbubble.com/i/sticker/Rudy-Pankow-and-Drew-Starkey-Sticker-by-RachelGreeley/58173280.EJUG5');
-    await reader.crawl('https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110');
-})();
+// (async function() {
+//     await reader.crawl('https://www.redbubble.com/i/sticker/Rudy-Pankow-and-Drew-Starkey-Sticker-by-RachelGreeley/58173280.EJUG5');
+//     await reader.crawl('https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110');
+// })();
 
 // });
 

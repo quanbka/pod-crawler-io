@@ -3,19 +3,13 @@ const path = require('path');
 const axios = require('axios');
 const xml2js = require('xml2js');
 
-const Parse = require('./parse');
+// const Parse = require('./parse');
 var amqp = require('amqplib/callback_api');
-amqp.connect('amqp://localhost', function(error0, connection) {});
-
-amqp.connect('amqp://localhost', function(error0, connection) {
-  if (error0) {
-    throw error0;
-  }
-  connection.createChannel(function(error1, channel) {});
-});
 
 
-const parse = new Parse();
+
+
+// const parse = new Parse();
 
 
 function convertToSlug(str) {
@@ -56,25 +50,38 @@ async function parseSitemapData(xmlData) {
     }
 }
 
-async function run(url) {
+async function run(url, channel) {
     let file = convertToSlug(url);
     let xmlData = await downloadAndReadFile(url, file);
     let [sitemapUrls, urls] = await parseSitemapData(xmlData);
     for (let i = 0; i < sitemapUrls.length; i++) {
         let url = sitemapUrls[i];
-        await run(url);
+        await run(url, channel);
     }
     for (let i = 0; i < urls.length; i++) {
         let url = urls[i];
-        // await parse.crawl(url);
+        channel.sendToQueue('redbubble.com', Buffer.from(url));
     }
 }
 
-const url = 'https://www.redbubble.com/sitemap/index-sitemap.xml';
-run(url);
 
 
+amqp.connect('amqp://localhost', function (error0, connection) {
+    if (error0) {
+        throw error0;
+    }
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        const url = 'https://www.redbubble.com/sitemap/index-sitemap.xml';
+        var queue = 'hello';
 
+        channel.assertQueue(queue, {
+            durable: false
+        });
 
-// // Kiểm tra nếu sitemap đã tồn tại trong vòng 1 ngày thì không cần tải lại
+        run(url, channel);
 
+    });
+});
