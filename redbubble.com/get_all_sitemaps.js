@@ -3,6 +3,12 @@ const path = require('path');
 const axios = require('axios');
 const xml2js = require('xml2js');
 
+const Parse = require('./parse');
+
+
+const parse = new Parse();
+
+
 function convertToSlug(str) {
     return str.replace('https://www.redbubble.com/sitemap/', 'redbubble.com/sitemap/');
 }
@@ -29,14 +35,14 @@ const downloadAndReadFile = async (url, filePath) => {
 
 async function parseSitemapData(xmlData) {
     const result = await xml2js.parseStringPromise(xmlData);
-    console.log(result);
+    // console.log(result);
     if (result.sitemapindex) {
         let links = result.sitemapindex.sitemap.map(url => url.loc[0]);
         return [links, []];
     }
     if (result.urlset) {
         let links = result.urlset.url.map(url => url.loc[0]);
-        console.log(links);
+        // console.log(links);
         return [[], links];
     }
 }
@@ -48,6 +54,10 @@ async function run(url) {
     for (let i = 0; i < sitemapUrls.length; i++) {
         let url = sitemapUrls[i];
         await run(url);
+    }
+    for (let i = 0; i < urls.length; i++) {
+        let url = urls[i];
+        await parse.crawl(url);
     }
 }
 

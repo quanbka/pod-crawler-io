@@ -1,7 +1,9 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('pod-crawler-io', 'root', '123@123', {
     host: '10.0.0.172',
-    dialect: 'mysql'
+    dialect: 'mysql',
+    logging: false // Tắt log của Sequelize
+
 });
 
 const cheerio = require('cheerio');
@@ -84,7 +86,7 @@ const Product = sequelize.define('product', {
         allowNull: false,
         unique: 'crawl_site' // Khai báo unique constraint cho crawlId và site
     },
-    crawl_code : {
+    crawl_code: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -92,15 +94,49 @@ const Product = sequelize.define('product', {
 
 
 
-class HtmlReader {
+class Parse {
+
+    async validate(url) {
+        if (url.includes('/shop/')) {
+            console.log("Không phải link sản phẩm");
+            return false;
+        } 
+        if (url.includes('/g/')) {
+            console.log("Không phải link sản phẩm");
+            return false;
+        } 
+        const product = await Product.findOne({ where: { url } });
+        if (product) {
+            console.log("Sản phẩm vừa được crawl");
+            return false;
+        }
+
+        
+        return true;
+    }
 
     async crawl(url) {
-        // console.log(url);
-        const html = await request.get(url);
-        // console.log(html);
-        let product = await this.readAndParseHTML(html);
-        console.log(product);
-        await this.upsertProduct(product);
+        console.log(url);
+
+        try {
+            if (await this.validate(url) == false) {
+                return false;
+            }
+            console.log("Link hợp lệ, đang lấy html");
+            const html = await request.get(url);
+            console.log("Đã lấy html xong");
+            // console.log(html);
+            let product = await this.readAndParseHTML(html);
+            // console.log(product);
+            await this.upsertProduct(product);
+        } catch (error) {
+            if (error.statusCode === 404) {
+                console.log("Link 404");
+                return;
+            }
+            console.error(error);
+        }
+      
     }
 
     async getTitle() {
@@ -110,6 +146,7 @@ class HtmlReader {
     }
 
     getColor(str, style = '') {
+        if (!str) return '';
         return str.replace(style, '');
     }
 
@@ -138,12 +175,12 @@ class HtmlReader {
         const ldJson = JSON.parse($('script[type="application/ld+json"]').first().html());
         const style = $('.styles__listContent--1pL_K h5').text();
         const gallery = $('img.GalleryImage__img--2Epz2').toArray().map(img => $(img).attr('src'));
-        const colors = $('.DesktopColorPicker__swatch--ODK-s').toArray().map(img => 
+        const colors = $('.DesktopColorPicker__swatch--ODK-s').toArray().map(img =>
             this.getColor($(img).attr('title'), style)
         );
         const printLocation = $('input[name="printLocation"][checked]').next().text();
         const color = this.getColor($('.ColorSwatch__tick--2FPuM').parent().parent().attr('title'), style);
-       
+
         const styleDescription = $('.styles__listContent--1pL_K h6').text();
         const tags = $('#product-tags span').toArray().map(span => $(span).text());
         return {
@@ -171,12 +208,13 @@ class HtmlReader {
 }
 
 // // sequelize.sync({ force: true }).then(() => {
-// const reader = new HtmlReader();
+const reader = new Parse();
 
-// (async function() {
-//     const url = 'https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110';
-//     await reader.crawl(url);
-//     console.log("Done");
-// })();
+(async function() {
+    await reader.crawl('https://www.redbubble.com/i/sticker/Rudy-Pankow-and-Drew-Starkey-Sticker-by-RachelGreeley/58173280.EJUG5');
+    await reader.crawl('https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110');
+})();
 
-// // });
+// });
+
+module.exports = Parse;
