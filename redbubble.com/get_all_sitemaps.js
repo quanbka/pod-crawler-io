@@ -4,6 +4,15 @@ const axios = require('axios');
 const xml2js = require('xml2js');
 
 const Parse = require('./parse');
+var amqp = require('amqplib/callback_api');
+amqp.connect('amqp://localhost', function(error0, connection) {});
+
+amqp.connect('amqp://localhost', function(error0, connection) {
+  if (error0) {
+    throw error0;
+  }
+  connection.createChannel(function(error1, channel) {});
+});
 
 
 const parse = new Parse();
@@ -57,7 +66,7 @@ async function run(url) {
     }
     for (let i = 0; i < urls.length; i++) {
         let url = urls[i];
-        await parse.crawl(url);
+        // await parse.crawl(url);
     }
 }
 
