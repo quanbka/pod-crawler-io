@@ -3,13 +3,11 @@ const path = require('path');
 const axios = require('axios');
 const xml2js = require('xml2js');
 
-// const Parse = require('./parse');
 var amqp = require('amqplib/callback_api');
 
 
 
 
-// const parse = new Parse();
 
 
 function convertToSlug(str) {
