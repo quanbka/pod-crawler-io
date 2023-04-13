@@ -132,9 +132,9 @@ class Parse {
             if (await this.validate(url) == false) {
                 return false;
             }
-            console.log("Link hợp lệ, đang lấy html");
+            // console.log("Link hợp lệ, đang lấy html");
             const html = await request.get(url);
-            console.log("Đã lấy html xong");
+            // console.log("Đã lấy html xong");
             // console.log(html);
             let product = await this.readAndParseHTML(html);
             // console.log(product);
