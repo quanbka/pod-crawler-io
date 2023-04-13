@@ -3,7 +3,7 @@ const parse = new Parse();
 
 
 var amqp = require('amqplib/callback_api');
-amqp.connect('amqp://localhost', function (error0, connection) {
+amqp.connect('amqp://127.0.0.1', function (error0, connection) {
     if (error0) {
         throw error0;
     }
@@ -21,7 +21,7 @@ amqp.connect('amqp://localhost', function (error0, connection) {
         channel.consume(queue, async function (msg) {
             // console.log(" [x] Received %s", );
             await parse.crawl(msg.content.toString());
-            console.log(msg.content.toString());
+            // console.log(msg.content.toString());
             channel.ack(msg);
         }, {
             noAck: false

@@ -64,7 +64,7 @@ async function run(url, channel) {
 
 
 
-amqp.connect('amqp://localhost', function (error0, connection) {
+amqp.connect('amqp://127.0.0.1', function (error0, connection) {
     if (error0) {
         throw error0;
     }

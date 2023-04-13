@@ -92,6 +92,11 @@ const Product = sequelize.define('product', {
     },
 });
 
+const FailedUrl = sequelize.define('failed_url', {
+    url: { type: Sequelize.STRING, allowNull: false },
+    error: { type: Sequelize.TEXT, allowNull: true },
+});
+
 
 
 class Parse {
@@ -100,18 +105,23 @@ class Parse {
         if (url.includes('/shop/')) {
             console.log("Không phải link sản phẩm");
             return false;
-        } 
+        }
         if (url.includes('/g/')) {
             console.log("Không phải link sản phẩm");
             return false;
-        } 
+        }
         const product = await Product.findOne({ where: { url } });
         if (product) {
             console.log("Sản phẩm vừa được crawl");
             return false;
         }
+        const failedUrl = await FailedUrl.findOne({ where: { url } });
+        if (failedUrl) {
+            console.log("Link này bị lỗi từ trước rồi");
+            return false;
+        }
 
-        
+
         return true;
     }
 
@@ -130,13 +140,18 @@ class Parse {
             // console.log(product);
             await this.upsertProduct(product);
         } catch (error) {
+            await FailedUrl.create({
+                url, 
+                error: error.message,
+                stackTrace: error.stack,
+            });
             if (error.statusCode === 404) {
                 console.log("Link 404");
                 return;
             }
             console.error(error);
         }
-      
+
     }
 
     async getTitle() {
@@ -207,8 +222,8 @@ class Parse {
     }
 }
 
-// // sequelize.sync({ force: true }).then(() => {
-const reader = new Parse();
+// sequelize.sync({ force: false }).then(() => {
+// const reader = new Parse();
 
 // (async function() {
 //     await reader.crawl('https://www.redbubble.com/i/sticker/Rudy-Pankow-and-Drew-Starkey-Sticker-by-RachelGreeley/58173280.EJUG5');
