@@ -198,6 +198,11 @@ class Parse {
 
         const styleDescription = $('.styles__listContent--1pL_K h6').text();
         const tags = $('#product-tags span').toArray().map(span => $(span).text());
+        ldJson.aggregateRating = ldJson.aggregateRating ?? {
+            ratingValue: 0,
+            bestRating: 5,
+            ratingCount : 0,
+        }; 
         return {
             'name': ldJson.name,
             'price': ldJson.offers.price,
@@ -223,12 +228,12 @@ class Parse {
 }
 
 // sequelize.sync({ force: false }).then(() => {
-// const reader = new Parse();
+const reader = new Parse();
 
-// (async function() {
-//     await reader.crawl('https://www.redbubble.com/i/sticker/Rudy-Pankow-and-Drew-Starkey-Sticker-by-RachelGreeley/58173280.EJUG5');
+(async function() {
+    await reader.crawl('https://www.redbubble.com/i/dog-mat/Path-to-Mayido-Nature-Ukiyo-Landscape-in-Green-White-and-Blue-by-Kijiermono/131568328.858KJ');
 //     await reader.crawl('https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110');
-// })();
+})();
 
 // });
 
