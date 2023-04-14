@@ -74,8 +74,14 @@ async function push(product, category_id) {
     }
     // console.log(data);
     // console.log(category_id);
-    let response = await axios.post('https://printerval.com/crawl-product/simple-crawl', data);
-    // console.log(response.data);
+    try {
+        let response = await axios.post('https://printerval.com/crawl-product/simple-crawl', data);
+        console.log(response.data);
+    } catch (error) {
+        console.log(error)
+    }
+
+    // console.log(response.data.status + ' ' + response.data.result.id);
 
 
 }
