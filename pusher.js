@@ -16,15 +16,15 @@ async function sendProductsToAPI() {
                             { pushedAt: { [Op.lt]: sequelize.col('updatedAt') } }
                         ]
                     },
-                    { style: 'Essential T-Shirt' }
+                    { description: 'T-Shirt' },
                 ]
             }
         });
-
+        console.log(product);
         await postToAPI(product);
         product.pushedAt = new Date();
         await product.save();
-
+        // product = null;
         // console.log(product.id);
     } while (product)
 
@@ -36,8 +36,10 @@ async function sendProductsToAPI() {
 sendProductsToAPI();
 
 async function getCategoryId(product) {
-    switch (product.style) {
+    switch (product.description) {
         case 'Essential T-Shirt':
+            return 7;
+        case 'T-Shirt':
             return 7;
         default:
             break;
@@ -89,6 +91,12 @@ async function push(product, category_id) {
 function get_design_crawl_code(url) {
     const regex = /\/(\d+)\.\w+$/;
     const result = regex.exec(url);
-    const code = result[1];
+    let code;
+    if (result) {
+         code = result[1];
+    } else {
+         code = url;
+    }
+    
     return code;
 }

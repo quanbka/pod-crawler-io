@@ -24,7 +24,7 @@ function getCrawlId(url) {
 
 async function getPage(page) {
     if (page > 17) return;
-    const response = await fetch(`https://www.etsy.com/c/clothing/mens-clothing/shirts-and-tees?explicit=1&category_landing_page=1&order=most_relevant&ref=pagination&page=${page}`, {
+    const response = await fetch(`https://www.etsy.com/c/clothing/mens-clothing/shirts-and-tees/tshirts?ref=pagination&explicit=1&page=${page}`, {
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "accept-language": "en-US,en;q=0.9",

@@ -3,7 +3,7 @@ const { Sequelize, Op } = require('sequelize');
 const sequelize = new Sequelize('pod-crawler-io', 'root', '123@123', {
     host: '10.0.0.172',
     dialect: 'mysql',
-    logging: false,
+    logging: true,
 });
 
 const db = {};
