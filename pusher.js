@@ -16,11 +16,10 @@ async function sendProductsToAPI() {
                             { pushedAt: { [Op.lt]: sequelize.col('updatedAt') } }
                         ]
                     },
-                    { description: 'T-Shirt' },
+                    // { description: 'T-Shirt' },
                 ]
             }
         });
-        console.log(product);
         await postToAPI(product);
         product.pushedAt = new Date();
         await product.save();
@@ -41,7 +40,10 @@ async function getCategoryId(product) {
             return 7;
         case 'T-Shirt':
             return 7;
+        case 'Active T-Shirt':
+            return 7;
         default:
+            console.log(product.description);
             break;
     }
     return;
@@ -50,6 +52,8 @@ async function getCategoryId(product) {
 async function postToAPI(product) {
 
     console.log(`Đang push sản phẩm có id ${product.id}`);
+    product.gallery = JSON.parse(product.gallery);
+    product.tags = JSON.parse(product.tags);
     let category_id = await getCategoryId(product);
     if (category_id) {
         await push(product, category_id);

@@ -3,7 +3,7 @@ const parse = new Parse();
 
 
 var amqp = require('amqplib/callback_api');
-amqp.connect('amqp://10.0.0.172', function (error0, connection) {
+amqp.connect('amqp://127.0.0.1', function (error0, connection) {
     if (error0) {
         throw error0;
     }

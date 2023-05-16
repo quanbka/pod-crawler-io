@@ -49,22 +49,26 @@ async function parseSitemapData(xmlData) {
 }
 
 async function run(url, channel) {
+    console.log("Running", url);
     let file = convertToSlug(url);
     let xmlData = await downloadAndReadFile(url, file);
     let [sitemapUrls, urls] = await parseSitemapData(xmlData);
+    for (let i = 0; i < urls.length; i++) {
+        let url = urls[i];
+        // url = "https://www.redbubble.com/i/t-shirt/Dreamy-water-potion-with-wizard-frog-by-Rihnlin/134069844.FB110";
+        console.log("Send to queue ", url);
+        channel.sendToQueue('redbubble.com', Buffer.from(url));
+    }
     for (let i = 0; i < sitemapUrls.length; i++) {
         let url = sitemapUrls[i];
         await run(url, channel);
     }
-    for (let i = 0; i < urls.length; i++) {
-        let url = urls[i];
-        channel.sendToQueue('redbubble.com', Buffer.from(url));
-    }
+
 }
 
 
 
-amqp.connect('amqp://10.0.0.172', function (error0, connection) {
+amqp.connect('amqp://127.0.0.1', function (error0, connection) {
     if (error0) {
         throw error0;
     }
@@ -72,14 +76,18 @@ amqp.connect('amqp://10.0.0.172', function (error0, connection) {
         if (error1) {
             throw error1;
         }
-        const url = 'https://www.redbubble.com/sitemap/index-sitemap.xml';
-        var queue = 'hello';
+        let url = 'https://www.redbubble.com/sitemap/index-sitemap.xml';
+        var queue = 'redbubble.com';
 
         channel.assertQueue(queue, {
             durable: false
         });
 
-        run(url, channel);
+ 
+        run('https://www.redbubble.com/sitemap/popular_t-shirt-index.xml', channel);
+        run('https://www.redbubble.com/sitemap/popular_graphic-t-shirt-dress-index.xml', channel);
+        run('https://www.redbubble.com/sitemap/popular_active-tshirt-index.xml', channel);
+        // run('url', channel);
 
     });
 });

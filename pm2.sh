@@ -1,1 +1,1 @@
-pm2 start redbubble.com/worker.js -i max --interpreter=/home/node-v14.21.2/bin/node -f
+pm2 start redbubble.com/worker.js --name=worker -i max

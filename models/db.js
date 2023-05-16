@@ -1,7 +1,7 @@
 const { Sequelize, Op } = require('sequelize');
 
-const sequelize = new Sequelize('pod-crawler-io', 'root', '123@123', {
-    host: '10.0.0.172',
+const sequelize = new Sequelize('pod-crawler-io', 'root', '123@123a', {
+    host: '127.0.0.1',
     dialect: 'mysql',
     logging: true,
 });
